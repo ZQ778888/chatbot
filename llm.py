@@ -1,6 +1,6 @@
 from openai import OpenAI
 
-from config import get_settings
+from app.config import get_settings
 
 
 def build_client() -> OpenAI:
