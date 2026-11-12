@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from config import get_settings
+from app.config import get_settings
 from llm import chat_once
 
 

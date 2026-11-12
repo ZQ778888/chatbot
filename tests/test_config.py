@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from config import get_settings
+from app.config import get_settings
 
 
 @pytest.fixture(autouse=True)

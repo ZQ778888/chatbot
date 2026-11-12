@@ -1,4 +1,4 @@
-from config import get_settings
+from app.config import get_settings
 from llm import build_client, chat_stream
 
 
