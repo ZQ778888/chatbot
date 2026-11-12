@@ -1,19 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 from fastapi.responses import StreamingResponse
 
 from app import storage
+from app.schemas import ChatRequest, StudyRequest
 
 router = APIRouter()
-
-
-class ChatRequest(BaseModel):
-    session_id: str
-    message: str
-
-
-class StudyRequest(BaseModel):
-    text: str
 
 
 @router.post("/chat")
