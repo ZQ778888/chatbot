@@ -11,11 +11,11 @@ router = APIRouter()
 def chat(request: ChatRequest):
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="消息不能为空")
-    storage.add_message(request.session_id, "user", request.message)
 
     # 模拟回复，不依赖真实API
     reply = f"这是模拟回复：我收到了你的消息 '{request.message}'"
-    storage.add_message(request.session_id, "assistant", reply)
+    # 用户消息与助手回复在同一事务中写入，失败则整体回滚
+    storage.add_exchange(request.session_id, request.message, reply)
     return {"session_id": request.session_id, "reply": reply}
 
 
