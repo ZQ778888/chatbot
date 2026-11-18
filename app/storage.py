@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import select
 
@@ -51,14 +51,13 @@ def add_exchange(session_id: str, user_message: str, assistant_reply: str) -> No
             raise
 
 
-def get_history(session_id: str) -> List[dict]:
-    """按 id 升序返回某个会话的全部消息。"""
+def get_history(session_id: str, keyword: Optional[str] = None) -> List[dict]:
+    """按 id 升序返回某个会话的消息；传入 keyword 时只返回内容包含它的消息。"""
     with get_session() as db:
-        stmt = (
-            select(MessageModel)
-            .where(MessageModel.session_id == session_id)
-            .order_by(MessageModel.id.asc())
-        )
+        stmt = select(MessageModel).where(MessageModel.session_id == session_id)
+        if keyword:
+            stmt = stmt.where(MessageModel.content.contains(keyword))
+        stmt = stmt.order_by(MessageModel.id.asc())
         rows = db.scalars(stmt).all()
         return [{"role": row.role, "content": row.content} for row in rows]
 

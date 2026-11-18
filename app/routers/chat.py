@@ -40,10 +40,10 @@ def list_sessions():
 
 
 @router.get("/sessions/{session_id}/messages")
-def get_messages(session_id: str):
-    history = storage.get_history(session_id)
-    if not history:
+def get_messages(session_id: str, keyword: str = None):
+    if session_id not in storage.get_all_sessions():
         raise HTTPException(status_code=404, detail="找不到该会话")
+    history = storage.get_history(session_id, keyword=keyword)
     return {"session_id": session_id, "messages": history}
 
 

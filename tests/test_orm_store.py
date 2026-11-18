@@ -1,19 +1,11 @@
-"""ORM 存储层测试：每个用例都跑在临时 SQLite 文件上，与真实 chat.db 完全隔离。"""
+"""ORM 存储层测试：每个用例都跑在临时 SQLite 文件上，与真实 chat.db 完全隔离。
+
+临时库由 tests/conftest.py 里的 temp_db fixture 提供。
+"""
 
 import sqlite3
 
-import pytest
-
 from app import database, storage
-
-
-@pytest.fixture
-def temp_db(tmp_path, monkeypatch):
-    db_file = tmp_path / "test.db"
-    monkeypatch.setenv("CHATBOT_DB_URL", "sqlite:///" + db_file.as_posix())
-    database.init_db()
-    yield db_file
-    database.dispose_engine()
 
 
 def test_persist_after_reconnect(temp_db):

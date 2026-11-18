@@ -40,6 +40,20 @@ WHERE session_id = ?
 ORDER BY id ASC;
 ```
 
+按关键词搜索历史消息时，只是在同一条查询上追加一个 `LIKE` 条件：
+
+```python
+stmt = stmt.where(MessageModel.content.contains(keyword))
+```
+
+```sql
+-- 等价 SQL：接口 GET /sessions/{session_id}/messages?keyword=xxx
+SELECT id, session_id, role, content
+FROM messages
+WHERE session_id = ? AND content LIKE '%xxx%'
+ORDER BY id ASC;
+```
+
 写入一轮对话时，`add_exchange()` 把「用户消息 + 助手回复」放在**同一个事务**里，对应三条语句：
 
 ```sql
