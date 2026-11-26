@@ -1,6 +1,13 @@
+# Python
 .env
 __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+
+# 本地数据库
 *.db
+
+# Node / 前端
+node_modules/
+dist/
