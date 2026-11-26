@@ -1,3 +1,84 @@
+# 聊天机器人（FastAPI + Vue 3）
+
+前后端分离的聊天机器人项目：`backend/` 是 FastAPI + SQLite（SQLAlchemy 2.x ORM）后端服务，`frontend/` 是 Vue 3 + Vite 前端空工程。
+
+## 项目结构
+
+```
+chatbot/
+├── backend/                 # 后端（FastAPI + SQLAlchemy）
+│   ├── app/
+│   │   ├── __init__.py
+│   │   ├── main.py          # FastAPI 应用入口，挂载路由与 static 目录
+│   │   ├── config.py        # pydantic-settings 配置（读取 .env）
+│   │   ├── database.py      # Engine / Session / init_db
+│   │   ├── models.py        # ORM 模型 SessionModel / MessageModel
+│   │   ├── schemas.py       # 请求体模型 ChatRequest / StudyRequest
+│   │   ├── storage.py       # 存储层：事务写入、关键词查询
+│   │   └── routers/
+│   │       ├── __init__.py
+│   │       └── chat.py      # /chat、/chat/stream、/sessions、/study/correct
+│   ├── static/
+│   │   └── index.html       # 极简网页聊天界面，由 FastAPI 托管
+│   ├── tests/               # pytest 用例（17 个，含 ORM / 事务 / 关键词查询）
+│   ├── pytest.ini           # testpaths=tests，pythonpath=.（可直接在 backend 下跑 pytest）
+│   ├── requirements.txt     # 后端依赖
+│   ├── .env.example         # 环境变量模板
+│   ├── llm.py               # DeepSeek 客户端封装（流式输出）
+│   ├── main.py              # 命令行版聊天入口
+│   └── chat.db              # 本地 SQLite 数据库（被 .gitignore 忽略，不提交）
+├── frontend/                # 前端（Vue 3 + Vite 空工程）
+│   ├── src/                 # main.js、App.vue、components/HelloWorld.vue
+│   ├── public/
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
+├── README.md
+└── .gitignore
+```
+
+## 后端启动
+
+```bash
+cd backend
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+- 网页聊天界面：http://127.0.0.1:8000/
+- Swagger 接口文档：http://127.0.0.1:8000/docs
+- `chat.db` 在 `backend/` 目录下生成/读取，必须以 `backend/` 作为工作目录启动
+
+### 后端测试
+
+```bash
+cd backend
+python -m pytest
+```
+
+当前 17 passed。测试通过 `CHATBOT_DB_URL` 指向临时目录下的 SQLite 文件，不会读写本地 `chat.db`。
+
+### 主要接口
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| POST | `/chat` | 普通对话，一次事务写入用户消息与回复 |
+| POST | `/chat/stream` | 流式输出测试 |
+| GET | `/sessions` | 列出所有会话 |
+| GET | `/sessions/{session_id}/messages` | 取历史记录，支持 `?keyword=` 模糊查询 |
+| DELETE | `/sessions/{session_id}` | 清空会话（级联删除消息） |
+| POST | `/study/correct` | 英语句子纠错（模拟返回） |
+
+## 前端启动
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Vite 开发服务器默认地址：http://127.0.0.1:5173/；打包命令 `npm run build`，产物输出到 `frontend/dist/`（已被忽略）。
+
 ## 数据库设计 (ER 图)
 
 ```mermaid
@@ -61,26 +142,4 @@ INSERT OR IGNORE INTO sessions (session_id) VALUES (?);
 INSERT INTO messages (session_id, role, content) VALUES (?, 'user', ?);
 INSERT INTO messages (session_id, role, content) VALUES (?, 'assistant', ?);
 -- 两条都成功才 COMMIT，任一条失败则 ROLLBACK，不会只留下半轮对话
-```
-
-# 聊天机器人 FastAPI 服务
-
-基于上次作业改造成 FastAPI 服务，支持连续对话、流式输出和英语纠错功能。
-
-## 启动方法
-
-1. 安装依赖：`pip install -r requirements.txt`
-2. 启动服务：`uvicorn app.main:app --reload`
-
-启动后访问 `http://127.0.0.1:8000/docs` 查看 Swagger 接口文档，访问 `http://127.0.0.1:8000/` 使用网页聊天界面。
-
-## 主要接口请求示例
-
-### 1. 普通对话
-**POST** `/chat`
-```json
-{
-  "session_id": "u1",
-  "message": "你好"
-}
 ```
